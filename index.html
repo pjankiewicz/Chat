@@ -1,0 +1,152 @@
+<html>
+<head>
+	<style>
+		.chat-wrapper{
+			width:300px;
+		  	height: 600px;
+			border: solid 1px #777;
+			padding: 15px;
+		}
+		.chat-history{
+			height: 500px;
+			border: solid 1px #ddd;
+		}
+		.chat-message-wrapper{
+
+		}
+		.chat-message{
+			width: 225px;
+			height: 87px;
+			float: left;
+			position: absolute;
+			overflow: hidden;
+			border: solid 1px #000;
+			display: block;
+		}
+		textarea{
+			border: none;
+		}
+		.beautiful-button{
+			color: #1B3DB5;
+			float: right;
+			display: block;
+			height: 87px;
+			width: 70px;
+		}
+		.invite{
+			font-size: 11px;
+			color: #888;
+		}
+        #log{
+            height: 250px;
+            overflow: scroll;
+            border: solid 1px #bfbfbf;
+        }
+	</style>
+</head>
+<body>
+{% if token %}
+	<script src='/_ah/channel/jsapi'></script>
+	<script src='http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js'></script>
+	<script type="text/javascript">
+		
+		/* This function is called everytime whenever the client wants to send something to the server
+		   using the channel API
+		*/
+		sendMessage = function(path, opt_params){
+			path += '?userid='+ state.userid  +'&gamekey=' + state.gamekey;
+			if (opt_params){
+				path += '&' + opt_params;
+			}
+			var xhr = new XMLHttpRequest();
+			xhr.open('POST', path, true);
+			xhr.send();
+		};
+
+		onOpen = function(){
+			sendMessage('/joingame');
+		};
+		
+		/* This function is called everytime the server sends a message to the client
+		*  using the Channel API
+		*/
+		onMessage = function(message){
+			var m = JSON.parse(message.data);
+			
+			var old = $('#log').html();
+			var new_m = old + '<br />' + message.data;
+			$('#log').html(new_m);
+
+			if( typeof(m.delta_chat) != 'undefined' && m.delta_chat != '' && m.delta_chat != null){
+				var oldchat = $('#chat-history').html();
+    		    var newchat = oldchat + '<br />' + ((m.player==state.userid)?'you':m.player)  + ': ' + m.delta_chat;
+				$('#chat-history').html(newchat);
+				$('#message').val('');
+			}
+			if( m.new_player === 1){
+				var oldchat = $('#chat-history').html();
+				var newchat = oldchat + '<br />' + m.name + ' has joined the conversation.'
+				$('#chat-history').html(newchat);
+			}
+		}
+	
+		/* An opener function which initialises all the handlers */
+		openchannel = function(){
+			var channel = new goog.appengine.Channel('{{ token }}');
+			var handler = {
+				'onopen' : onOpen,
+				'onmessage' : onMessage,
+				'onerror' : function() {},
+				'onclode' : function() {}
+			};
+			var socket = channel.open(handler);
+			socket.onopen = onOpen;
+			socket.onmessage = onMessage;
+		};
+		/* These variables decide the main state of the game */
+		var state = {
+			'userid'  : '{{ userid }}',
+			'gamekey' : '{{ gamekey }}'
+		};
+		
+		/* This function is called everytime the user attempts to send a chat
+		*/
+		onChatSend = function(){
+			messagetext = $('#message').val();
+			sendMessage('/chat', 'm=' + messagetext);
+		}
+		
+		$(document).ready(function (){
+			$('#sendchat').click(onChatSend);
+			openchannel();
+		});
+	</script>
+	<a href="{{logout_url}}">Logout</a>	| <a href="/leave">Leave this gameroom</a>
+	<div class="chat-wrapper">
+		<div class="chat-history" id="chat-history">
+		</div>
+		<div class="chat-message-wrapper">
+			<div class="chat-message">
+				<textarea id="message" class="message" rows="5" cols="25"></textarea>
+			</div>
+			<div class="send-button">
+				<input type="button" name="Send" value="Send" class="beautiful-button" id="sendchat"/>
+			</div>
+		</div>
+	</div>
+	<div id="log"></div>
+{% else %}
+	<!--//
+   Token not present, ask the user to log in 
+   	-->
+   <form action = "/" method = "get">
+   		<label for ="userid">Pick a handle</label>
+		{% if gamekey %}
+			<input type="hidden" name="gamekey" value="{{ gamekey }}" />
+		{% endif %}
+   		<input type="text" name="userid" id="userid">
+		<input type="submit" value="Enter the dragon" />
+   </form>
+{% endif %}
+</body>
+</html>

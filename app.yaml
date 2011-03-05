@@ -1,0 +1,32 @@
+application: praca-domowa-24
+version: 1
+runtime: python
+api_version: 1
+
+builtins:
+- datastore_admin: on
+- appstats: on
+
+handlers:
+- url: /stats.*
+  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
+  
+- url: /
+  script: main2.py
+  login: required
+
+- url: /index\.html
+  script: main2.py
+  login: required
+
+- url: /(.*\.(gif|png|jpg))
+  static_files: static/\1
+  upload: static/(.*\.(gif|png|jpg))
+
+- url: /bye
+  script: main2.py
+
+- url: /.*
+  script: main2.py
+  login: required
+
