@@ -1,0 +1,40 @@
+
+
+Wymagania
+
+Front End 
+- lista pokoi (przedmioty) - ilość użytkowników w każdym
+- w każdym pokoju lista użytkowników + avatary + punkty
+- moderacja pokoju (od jakiejś ilości punktów)
+- zapraszanie do rozmowy 1-on-1
+- ignorowanie uzytkownika (nie można zacząć rozmowy jeżeli jest ignorowany)
+- jquery ui
+
+Backend
+
+Tabele
+
+Lista pokoi
+- nazwa pokoju
+- liczba użytkowników (sharded count)
+
+Lista rozmow 1 na 1
+- uzytkownik 1
+- uzytkownik 2
+- data utworzenia
+
+Lista ignorowanych
+- uzytkownik id 1
+- uzytkownik id 2
+(unikalna kombinacja)
+
+Log rozmow w pokoju
+- nazwa pokoju
+- uzytkownik
+- tekst
+- data
+
+Log rozmow 1 na 1
+- uzytkownik
+- tekst
+- data
